@@ -45,7 +45,7 @@ func createWorkspacesTable(workspaces workspaceResponse) table.Model {
 		{Title: "Org Name", Width: 10},
 		{Title: "Workspace ID", Width: 15},
 		{Title: "Workspace Name", Width: 15},
-		{Title: "Workspace Full Name", Width: 20},
+		{Title: "Workspace Full Name", Width: 25},
 	}, rows)
 }
 
@@ -54,11 +54,12 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 	for _, workflow := range workflows.Workflows {
 		rows = append(rows,
 			table.Row{
+				workflow.Workflow.Id,
 				workflow.Workflow.RunName,
 				workflow.Workflow.Status,
-                                workflow.Workflow.Submit,
-                                workflow.Workflow.Start,
-                                workflow.Workflow.Complete,
+				workflow.Workflow.Submit,
+				workflow.Workflow.Start,
+				workflow.Workflow.Complete,
 				strconv.Itoa(workflow.Workflow.Stats.Cached),
 				strconv.Itoa(workflow.Workflow.Stats.Succeeded),
 				strconv.Itoa(workflow.Workflow.Stats.Failed),
@@ -66,13 +67,26 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 		)
 	}
 	return createTable([]table.Column{
+		{Title: "id", Width: 0},
 		{Title: "runName", Width: 15},
-		{Title: "status", Width: 15},
-                {Title: "submit", Width: 15},
-                {Title: "start", Width: 15},
-                {Title: "complete", Width: 15},
-		{Title: "cached", Width: 15},
-		{Title: "succeeded", Width: 15},
-		{Title: "failed", Width: 15},
+		{Title: "status", Width: 10},
+		{Title: "submit", Width: 20},
+		{Title: "start", Width: 20},
+		{Title: "complete", Width: 20},
+		{Title: "cached", Width: 10},
+		{Title: "succeeded", Width: 10},
+		{Title: "failed", Width: 10},
 	}, rows)
+}
+
+func (m model) filterModelTable(tableColumnIndex int, query string) table.Model {
+	filteredTable := m.table
+	rows := []table.Row{}
+	for _, row := range m.table.Rows() {
+		if row[tableColumnIndex] == query {
+			rows = append(rows, row)
+		}
+	}
+	filteredTable.SetRows(rows)
+	return filteredTable
 }

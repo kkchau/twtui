@@ -20,15 +20,16 @@ type workflowsResponse struct {
 	Workflows []struct {
 		OrgName  string `json:"orgName"`
 		Workflow struct {
-			RunName string `json:"runName"`
-			Status  string `json:"status"`
-			Submit  string `json:"submit"`
-			Start   string `json:"start"`
+			Id       string `json:"id"`
+			RunName  string `json:"runName"`
+			Status   string `json:"status"`
+			Submit   string `json:"submit"`
+			Start    string `json:"start"`
 			Complete string `json:"complete"`
 			Stats    struct {
-				Cached int `json:"cachedCount"`
+				Cached    int `json:"cachedCount"`
 				Succeeded int `json:"succeedCount"`
-				Failed int `json:"failedCount"`
+				Failed    int `json:"failedCount"`
 			} `json:"stats"`
 		} `json:"workflow"`
 	} `json:"workflows"`
