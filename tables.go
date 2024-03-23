@@ -2,12 +2,13 @@ package main
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 )
 
-func createTable(columns []table.Column, rows []table.Row) table.Model {
+func createTable(columns []table.Column, rows []table.Row) (t table.Model, h []string) {
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -18,16 +19,21 @@ func createTable(columns []table.Column, rows []table.Row) table.Model {
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
 		Bold(false)
-	t := table.New(
+	t = table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
 	)
 	t.SetStyles(s)
-	return t
+
+	h = make([]string, len(columns))
+	for i, col := range columns {
+		h[i] = col.Title
+	}
+	return t, h
 }
 
-func createWorkspacesTable(workspaces workspaceResponse) table.Model {
+func createWorkspacesTable(workspaces workspaceResponse) (table.Model, []string) {
 	rows := []table.Row{}
 	for _, workspace := range workspaces.OrgsAndWorkspaces {
 		rows = append(rows,
@@ -41,19 +47,21 @@ func createWorkspacesTable(workspaces workspaceResponse) table.Model {
 		)
 	}
 	return createTable([]table.Column{
-		{Title: "Org ID", Width: 15},
-		{Title: "Org Name", Width: 10},
-		{Title: "Workspace ID", Width: 15},
-		{Title: "Workspace Name", Width: 15},
-		{Title: "Workspace Full Name", Width: 25},
+		{Title: "orgId", Width: 15},
+		{Title: "orgName", Width: 10},
+		{Title: "workspaceId", Width: 15},
+		{Title: "workspaceName", Width: 15},
+		{Title: "workspaceFullName", Width: 25},
 	}, rows)
 }
 
-func createWorkflowsTable(workflows workflowsResponse) table.Model {
+func createWorkflowsTable(workflows workflowsResponse) (table.Model, []string) {
 	rows := []table.Row{}
 	for _, workflow := range workflows.Workflows {
-		rows = append(rows,
+		rows = append(
+			rows,
 			table.Row{
+				strconv.Itoa(workflow.WorkspaceId),
 				workflow.Workflow.Id,
 				workflow.Workflow.RunName,
 				workflow.Workflow.Status,
@@ -67,6 +75,7 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 		)
 	}
 	return createTable([]table.Column{
+		{Title: "workspaceId", Width: 0},
 		{Title: "id", Width: 0},
 		{Title: "runName", Width: 15},
 		{Title: "status", Width: 10},
@@ -78,15 +87,36 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 		{Title: "failed", Width: 10},
 	}, rows)
 }
-
-func (m model) filterModelTable(tableColumnIndex int, query string) table.Model {
-	filteredTable := m.table
+func createTasksTable(tasks tasksResponse) (table.Model, []string) {
 	rows := []table.Row{}
-	for _, row := range m.table.Rows() {
-		if row[tableColumnIndex] == query {
+	for _, task := range tasks.Tasks {
+		rows = append(
+			rows,
+			table.Row{
+				task.Task.Id,
+				task.Task.Name,
+				task.Task.Status,
+				strconv.Itoa(task.Task.Attempt),
+				task.Task.Duration,
+				task.Task.Tag,
+			},
+		)
+	}
+	return createTable([]table.Column{
+		{Title: "id", Width: 0},
+		{Title: "name", Width: 15},
+		{Title: "status", Width: 10},
+		{Title: "attempt", Width: 10},
+		{Title: "duration", Width: 10},
+		{Title: "tag", Width: 10},
+	}, rows)
+}
+
+func queryRows(inputRows []table.Row, tableColumnIndex int, query string) (rows []table.Row) {
+	for _, row := range inputRows {
+		if strings.Contains(row[tableColumnIndex], query) {
 			rows = append(rows, row)
 		}
 	}
-	filteredTable.SetRows(rows)
-	return filteredTable
+	return rows
 }

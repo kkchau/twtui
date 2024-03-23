@@ -34,21 +34,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.table.Focused() && len(m.inputs) > 0 {
 				m.table.Focus()
 				blurInputs(m.inputs, false)
-				return m, nil
-			}
-			if m.context > MinContext+1 {
+			} else if m.context > MinContext+1 {
 				prevRow := m.prevContext()
 				m.updateTable(prevRow)
 			}
 			return m, nil
 		case "enter":
 			if !m.table.Focused() {
-				return m, nil
-			}
-			blurInputs(m.inputs, true)
-			if m.context < MaxContext-1 {
-				m.nextContext()
-				m.updateTable(m.table.SelectedRow())
+				m.filterModelTable()
+			} else {
+				blurInputs(m.inputs, true)
+				if m.context < MaxContext-1 {
+					m.nextContext()
+					m.updateTable(m.table.SelectedRow())
+				}
 			}
 			return m, nil
 		case "ctrl+c":
@@ -93,9 +92,17 @@ func (m model) Init() tea.Cmd { return nil }
 
 func main() {
 	userWorkspaces := getWorkspaces()
-	workspacesTable := createWorkspacesTable(userWorkspaces)
+	workspacesTable, workspacesTableHeaders := createWorkspacesTable(userWorkspaces)
 	workspacesFilter := createWorkspacesFilter()
-	if _, err := tea.NewProgram(model{workspacesTable, workspacesFilter, table.Model{}, Workspaces, []table.Row{}}).Run(); err != nil {
+	if _, err := tea.NewProgram(
+		model{
+			workspacesTable,
+			workspacesTableHeaders,
+			workspacesFilter,
+			Workspaces,
+			[]table.Row{},
+		},
+	).Run(); err != nil {
 		fmt.Printf("Uh oh, there was an error: %v\n", err)
 		os.Exit(1)
 	}

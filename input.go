@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -13,9 +12,6 @@ var (
 	noStyle             = lipgloss.NewStyle()
 	helpStyle           = blurredStyle.Copy()
 	cursorModeHelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-
-	focusedButton = focusedStyle.Copy().Render("[ Submit ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Submit"))
 )
 
 func createTextInput(fields []string) []textinput.Model {
@@ -62,8 +58,11 @@ func (m *model) cycleInputs() {
 }
 
 func createWorkspacesFilter() []textinput.Model {
-	return createTextInput([]string{"Org ID", "Org Name", "Workspace ID", "Workspace Name", "Workspace Full Name"})
+	return createTextInput([]string{"orgId", "orgName", "workspaceId", "workspaceName", "workspaceFullName"})
 }
 func createWorkflowsFilter() []textinput.Model {
-	return createTextInput([]string{"Name", "Status"})
+	return createTextInput([]string{"runName", "status"})
+}
+func createTasksFilter() []textinput.Model {
+	return createTextInput([]string{"name", "status", "tag"})
 }

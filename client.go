@@ -71,3 +71,23 @@ func getWorkflows(workspaceId string) workflowsResponse {
 	json.Unmarshal(body, &workflows)
 	return workflows
 }
+
+func getWorkflowTasks(workspaceId string, workflowId string) tasksResponse {
+	req, _ := makeGetRequest("/workflow" + workflowId + "/tasks")
+	query := req.URL.Query()
+	query.Add("workspaceId", workspaceId)
+	req.URL.RawQuery = query.Encode()
+	client := &http.Client{Timeout: 10 * time.Second}
+	res, err := client.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+
+	body, _ := io.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	tasks := tasksResponse{}
+	json.Unmarshal(body, &tasks)
+	return tasks
+}

@@ -18,8 +18,9 @@ type workspaceResponse struct {
 
 type workflowsResponse struct {
 	Workflows []struct {
-		OrgName  string `json:"orgName"`
-		Workflow struct {
+		OrgName     string `json:"orgName"`
+		WorkspaceId int    `json:"workspaceId"`
+		Workflow    struct {
 			Id       string `json:"id"`
 			RunName  string `json:"runName"`
 			Status   string `json:"status"`
@@ -33,4 +34,26 @@ type workflowsResponse struct {
 			} `json:"stats"`
 		} `json:"workflow"`
 	} `json:"workflows"`
+}
+
+type workflowResponse struct {
+	Workflow struct {
+		Id       string `json:"id"`
+		RunName  string `json:"runName"`
+		Status   string `json:"status"`
+		Duration string `json:"duration"`
+	} `json:"workflow"`
+}
+
+type tasksResponse struct {
+	Tasks []struct {
+		Task struct {
+			Id       string `json:"id"`
+			Name     string `json:"name"`
+			Status   string `json:"status"`
+			Attempt  int    `json:"attempt"`
+			Duration string `json:"duration"`
+			Tag      string `json:"tag"`
+		} `json:"task"`
+	}
 }

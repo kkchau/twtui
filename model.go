@@ -15,9 +15,8 @@ const (
 	MinContext Context = iota
 	Workspaces
 	Workflows
-	MaxContext // Limit the context to here until more contexts are implemented
-	Runs
 	Tasks
+	MaxContext
 )
 
 type model struct {
@@ -26,13 +25,10 @@ type model struct {
 	// the user.
 	table table.Model
 
-	inputs []textinput.Model
+	// Store table headers since there's no way to access them from the table
+	tableHeader []string
 
-	// Represents the data in the table field filtered down to some subset of the
-	// original data. This is used to allow the user to navigate through the
-	// data in a more focused manner. The original data is stored in the table
-	// field when the user is done with the filtered data.
-	filteredTable table.Model
+	inputs []textinput.Model
 
 	// The context represents the current state of the application.
 	context Context
@@ -59,10 +55,28 @@ func (m *model) prevContext() table.Row {
 func (m *model) updateTable(selectedRow table.Row) {
 	switch m.context {
 	case Workspaces:
-		m.table = createWorkspacesTable(getWorkspaces())
+		m.table, m.tableHeader = createWorkspacesTable(getWorkspaces())
 		m.inputs = createWorkspacesFilter()
 	case Workflows:
-		m.table = createWorkflowsTable(getWorkflows(selectedRow[2]))
+		m.table, m.tableHeader = createWorkflowsTable(getWorkflows(selectedRow[2]))
 		m.inputs = createWorkflowsFilter()
+	case Tasks:
+		m.table, m.tableHeader = createTasksTable(getWorkflowTasks(selectedRow[0], selectedRow[1]))
+		m.inputs = createTasksFilter()
+	}
+}
+
+// Filter the table based on stored inputs
+func (m *model) filterModelTable() {
+	for i := range m.inputs {
+		for j := range m.tableHeader {
+			if m.inputs[i].Placeholder == m.tableHeader[j] {
+				m.table.SetRows(
+					queryRows(
+						m.table.Rows(), j, m.inputs[i].Value(),
+					),
+				)
+			}
+		}
 	}
 }
