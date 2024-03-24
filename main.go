@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/bubble-table/table"
 )
 
 var url = os.Getenv("TOWER_API_ENDPOINT")
@@ -18,87 +18,48 @@ var baseStyle = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("240"))
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+	m.table, cmd = m.table.Update(msg)
+	cmds = append(cmds, cmd)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "/":
-			if m.table.Focused() && len(m.inputs) > 0 {
-				m.table.Blur()
-				m.inputs[0].Focus()
-			}
-			return m, nil
-		case "tab":
-			m.cycleInputs()
 		case "esc":
-			if !m.table.Focused() && len(m.inputs) > 0 {
-				m.table.Focus()
-				blurInputs(m.inputs, false)
-			} else if m.context > MinContext+1 {
+			if m.context > MinContext+1 {
 				prevRow := m.prevContext()
 				m.updateTable(prevRow)
 			}
 			return m, nil
 		case "enter":
-			if !m.table.Focused() {
-				m.filterModelTable()
-			} else {
-				blurInputs(m.inputs, true)
-				if m.context < MaxContext-1 {
-					m.nextContext()
-					m.updateTable(m.table.SelectedRow())
-				}
+			if m.context < MaxContext-1 {
+				m.nextContext()
+				m.updateTable(m.table.HighlightedRow())
 			}
 			return m, nil
-		case "ctrl+c":
+		case "q", "ctrl+c":
 			return m, tea.Quit
 		}
 	}
-
-	// If the focus is on the text input, update the text input.
-	for i := range m.inputs {
-		if m.inputs[i].Focused() {
-			m.inputs[i], cmd = m.inputs[i].Update(msg)
-			return m, tea.Batch(cmd)
-		}
-	}
-
-	// Otherwise, update the table.
-	m.table, cmd = m.table.Update(msg)
-
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
-	inputStrings := make([]string, len(m.inputs))
-	for i := range m.inputs {
-		builder := strings.Builder{}
-		builder.WriteString(m.inputs[i].View())
-		builder.WriteString("\t")
-		inputStrings[i] = builder.String()
-	}
-
-	return lipgloss.JoinVertical(
-		lipgloss.Left,
-		baseStyle.Render(m.table.View()),
-		lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			inputStrings...,
-		),
-	) + "\n"
+	body := strings.Builder{}
+	body.WriteString(m.table.View())
+	return body.String()
 }
 
 func (m model) Init() tea.Cmd { return nil }
 
 func main() {
 	userWorkspaces := getWorkspaces()
-	workspacesTable, workspacesTableHeaders := createWorkspacesTable(userWorkspaces)
-	workspacesFilter := createWorkspacesFilter()
+	workspacesTable := createWorkspacesTable(userWorkspaces)
 	if _, err := tea.NewProgram(
 		model{
 			workspacesTable,
-			workspacesTableHeaders,
-			workspacesFilter,
 			Workspaces,
 			[]table.Row{},
 		},

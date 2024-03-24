@@ -51,10 +51,10 @@ func getWorkspaces() workspaceResponse {
 	return getWorkspacesFromUserInfo(getUserInfo().User.Id)
 }
 
-func getWorkflows(workspaceId string) workflowsResponse {
+func getWorkflows(workspaceId int) workflowsResponse {
 	req, _ := makeGetRequest("/workflow")
 	query := req.URL.Query()
-	query.Add("workspaceId", workspaceId)
+	query.Add("workspaceId", strconv.Itoa(workspaceId))
 	req.URL.RawQuery = query.Encode()
 
 	client := &http.Client{Timeout: 10 * time.Second}

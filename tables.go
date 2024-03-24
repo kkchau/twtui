@@ -1,122 +1,81 @@
 package main
 
 import (
-	"strconv"
-	"strings"
-
-	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/bubble-table/table"
 )
 
-func createTable(columns []table.Column, rows []table.Row) (t table.Model, h []string) {
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
-	t = table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-	)
-	t.SetStyles(s)
-
-	h = make([]string, len(columns))
-	for i, col := range columns {
-		h[i] = col.Title
+func createTable(columns []table.Column, rowDatas []table.RowData) (t table.Model) {
+	rows := make([]table.Row, len(rowDatas))
+	for i, rowData := range rowDatas {
+		rows[i] = table.NewRow(rowData)
 	}
-	return t, h
-}
-
-func createWorkspacesTable(workspaces workspaceResponse) (table.Model, []string) {
-	rows := []table.Row{}
-	for _, workspace := range workspaces.OrgsAndWorkspaces {
-		rows = append(rows,
-			table.Row{
-				strconv.Itoa(workspace.OrgId),
-				workspace.OrgName,
-				strconv.Itoa(workspace.WorkspaceId),
-				workspace.WorkspaceName,
-				workspace.WorkspaceFullName,
-			},
+	t = table.New(columns).
+		WithRows(rows).
+		Filtered(true).
+		Focused(true).
+		WithPageSize(10).
+		WithTargetWidth(100).
+		WithBaseStyle(
+			lipgloss.NewStyle().
+				BorderForeground(lipgloss.Color("#a38")).
+				Foreground(lipgloss.Color("#a7a")).
+				Align(lipgloss.Left),
+		).
+		HeaderStyle(
+			lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true),
 		)
-	}
-	return createTable([]table.Column{
-		{Title: "orgId", Width: 15},
-		{Title: "orgName", Width: 10},
-		{Title: "workspaceId", Width: 15},
-		{Title: "workspaceName", Width: 15},
-		{Title: "workspaceFullName", Width: 25},
-	}, rows)
+	return
 }
 
-func createWorkflowsTable(workflows workflowsResponse) (table.Model, []string) {
-	rows := []table.Row{}
-	for _, workflow := range workflows.Workflows {
-		rows = append(
-			rows,
-			table.Row{
-				strconv.Itoa(workflow.WorkspaceId),
-				workflow.Workflow.Id,
-				workflow.Workflow.RunName,
-				workflow.Workflow.Status,
-				workflow.Workflow.Submit,
-				workflow.Workflow.Start,
-				workflow.Workflow.Complete,
-				strconv.Itoa(workflow.Workflow.Stats.Cached),
-				strconv.Itoa(workflow.Workflow.Stats.Succeeded),
-				strconv.Itoa(workflow.Workflow.Stats.Failed),
-			},
-		)
-	}
-	return createTable([]table.Column{
-		{Title: "workspaceId", Width: 0},
-		{Title: "id", Width: 0},
-		{Title: "runName", Width: 15},
-		{Title: "status", Width: 10},
-		{Title: "submit", Width: 20},
-		{Title: "start", Width: 20},
-		{Title: "complete", Width: 20},
-		{Title: "cached", Width: 10},
-		{Title: "succeeded", Width: 10},
-		{Title: "failed", Width: 10},
-	}, rows)
-}
-func createTasksTable(tasks tasksResponse) (table.Model, []string) {
-	rows := []table.Row{}
-	for _, task := range tasks.Tasks {
-		rows = append(
-			rows,
-			table.Row{
-				task.Task.Id,
-				task.Task.Name,
-				task.Task.Status,
-				strconv.Itoa(task.Task.Attempt),
-				task.Task.Duration,
-				task.Task.Tag,
-			},
-		)
-	}
-	return createTable([]table.Column{
-		{Title: "id", Width: 0},
-		{Title: "name", Width: 15},
-		{Title: "status", Width: 10},
-		{Title: "attempt", Width: 10},
-		{Title: "duration", Width: 10},
-		{Title: "tag", Width: 10},
-	}, rows)
-}
-
-func queryRows(inputRows []table.Row, tableColumnIndex int, query string) (rows []table.Row) {
-	for _, row := range inputRows {
-		if strings.Contains(row[tableColumnIndex], query) {
-			rows = append(rows, row)
+func createWorkspacesTable(workspaces workspaceResponse) table.Model {
+	rowDatas := make([]table.RowData, len(workspaces.OrgsAndWorkspaces))
+	for i, workspace := range workspaces.OrgsAndWorkspaces {
+		rowDatas[i] = table.RowData{
+			"orgId":             workspace.OrgId,
+			"orgName":           workspace.OrgName,
+			"workspaceId":       workspace.WorkspaceId,
+			"workspaceName":     workspace.WorkspaceName,
+			"workspaceFullName": workspace.WorkspaceFullName,
 		}
 	}
-	return rows
+	return createTable(
+		[]table.Column{
+			table.NewFlexColumn("orgName", "Org Name", 1).WithFiltered(true),
+			table.NewFlexColumn("workspaceName", "Workspace Name", 1),
+			table.NewFlexColumn("workspaceFullName", "Workspace Full Name", 1).WithFiltered(true),
+		},
+		rowDatas,
+	)
+}
+
+func createWorkflowsTable(workflows workflowsResponse) table.Model {
+	rowDatas := make([]table.RowData, len(workflows.Workflows))
+	for i, workflow := range workflows.Workflows {
+		rowDatas[i] = table.RowData{
+			"workspaceId": workflow.WorkspaceId,
+			"id":          workflow.Workflow.Id,
+			"runName":     workflow.Workflow.RunName,
+			"status":      workflow.Workflow.Status,
+			"submit":      workflow.Workflow.Submit,
+			"start":       workflow.Workflow.Start,
+			"complete":    workflow.Workflow.Complete,
+			"cached":      workflow.Workflow.Stats.Cached,
+			"succeeded":   workflow.Workflow.Stats.Succeeded,
+			"failed":      workflow.Workflow.Stats.Failed,
+		}
+	}
+	return createTable(
+		[]table.Column{
+			table.NewColumn("runName", "Run Name", 15).WithFiltered(true),
+			table.NewColumn("status", "Status", 10).WithFiltered(true),
+			table.NewColumn("submit", "Submit", 20),
+			table.NewColumn("start", "Start", 20),
+			table.NewColumn("complete", "Complete", 20),
+			table.NewColumn("cached", "Cached", 10),
+			table.NewColumn("succeeded", "Succeeded", 10),
+			table.NewColumn("failed", "Failed", 10),
+		},
+		rowDatas,
+	)
 }

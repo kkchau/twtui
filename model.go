@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/evertras/bubble-table/table"
 )
 
 // Stores the current context of the application
@@ -25,11 +24,6 @@ type model struct {
 	// the user.
 	table table.Model
 
-	// Store table headers since there's no way to access them from the table
-	tableHeader []string
-
-	inputs []textinput.Model
-
 	// The context represents the current state of the application.
 	context Context
 
@@ -41,7 +35,7 @@ type model struct {
 
 func (m *model) nextContext() {
 	m.context += 1
-	m.rowQueryStack = append(m.rowQueryStack, m.table.SelectedRow())
+	m.rowQueryStack = append(m.rowQueryStack, m.table.HighlightedRow())
 }
 func (m *model) prevContext() table.Row {
 	m.context -= 1
@@ -52,31 +46,11 @@ func (m *model) prevContext() table.Row {
 	m.rowQueryStack = m.rowQueryStack[:len(m.rowQueryStack)-1]
 	return row
 }
-func (m *model) updateTable(selectedRow table.Row) {
+func (m *model) updateTable(highlightedRow table.Row) {
 	switch m.context {
 	case Workspaces:
-		m.table, m.tableHeader = createWorkspacesTable(getWorkspaces())
-		m.inputs = createWorkspacesFilter()
+		m.table = createWorkspacesTable(getWorkspaces())
 	case Workflows:
-		m.table, m.tableHeader = createWorkflowsTable(getWorkflows(selectedRow[2]))
-		m.inputs = createWorkflowsFilter()
-	case Tasks:
-		m.table, m.tableHeader = createTasksTable(getWorkflowTasks(selectedRow[0], selectedRow[1]))
-		m.inputs = createTasksFilter()
-	}
-}
-
-// Filter the table based on stored inputs
-func (m *model) filterModelTable() {
-	for i := range m.inputs {
-		for j := range m.tableHeader {
-			if m.inputs[i].Placeholder == m.tableHeader[j] {
-				m.table.SetRows(
-					queryRows(
-						m.table.Rows(), j, m.inputs[i].Value(),
-					),
-				)
-			}
-		}
+		m.table = createWorkflowsTable(getWorkflows(highlightedRow.Data["workspaceId"].(int)))
 	}
 }
