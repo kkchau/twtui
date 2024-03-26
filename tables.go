@@ -53,6 +53,7 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 	rowDatas := make([]table.RowData, len(workflows.Workflows))
 	for i, workflow := range workflows.Workflows {
 		rowDatas[i] = table.RowData{
+			"workflowId":  workflow.Workflow.Id,
 			"workspaceId": workflow.WorkspaceId,
 			"id":          workflow.Workflow.Id,
 			"runName":     workflow.Workflow.RunName,
@@ -76,6 +77,30 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 			table.NewColumn("succeeded", "Succeeded", 10),
 			table.NewColumn("failed", "Failed", 10),
 		},
+		rowDatas,
+	)
+}
+
+func createTasksTable(tasks tasksResponse) table.Model {
+	rowDatas := make([]table.RowData, len(tasks.Tasks))
+	for i, task := range tasks.Tasks {
+		rowDatas[i] = table.RowData{
+			"id":       task.Task.Id,
+			"name":     task.Task.Name,
+			"status":   task.Task.Status,
+			"attempt":  task.Task.Attempt,
+			"duration": task.Task.Duration,
+			"tag":      task.Task.Tag,
+		}
+	}
+	return createTable(
+		[]table.Column{
+                    table.NewFlexColumn("name", "Name", 1).WithFiltered(true),
+                    table.NewColumn("status", "Status", 1).WithFiltered(true),
+                    table.NewColumn("attempt", "Attempt", 1),
+                    table.NewColumn("duration", "Duration", 1),
+                    table.NewColumn("tag", "Tag", 1),
+                },
 		rowDatas,
 	)
 }

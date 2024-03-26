@@ -52,5 +52,9 @@ func (m *model) updateTable(highlightedRow table.Row) {
 		m.table = createWorkspacesTable(getWorkspaces())
 	case Workflows:
 		m.table = createWorkflowsTable(getWorkflows(highlightedRow.Data["workspaceId"].(int)))
+	case Tasks:
+		m.table = createTasksTable(
+			getWorkflowTasks(highlightedRow.Data["workspaceId"].(int), highlightedRow.Data["workflowId"].(string)),
+		)
 	}
 }

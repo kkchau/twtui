@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -72,10 +73,10 @@ func getWorkflows(workspaceId int) workflowsResponse {
 	return workflows
 }
 
-func getWorkflowTasks(workspaceId string, workflowId string) tasksResponse {
+func getWorkflowTasks(workspaceId int, workflowId string) tasksResponse {
 	req, _ := makeGetRequest("/workflow" + workflowId + "/tasks")
 	query := req.URL.Query()
-	query.Add("workspaceId", workspaceId)
+	query.Add("workspaceId", strconv.Itoa(workspaceId))
 	req.URL.RawQuery = query.Encode()
 	client := &http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)

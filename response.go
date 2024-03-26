@@ -55,5 +55,5 @@ type tasksResponse struct {
 			Duration string `json:"duration"`
 			Tag      string `json:"tag"`
 		} `json:"task"`
-	}
+	} `json:"tasks"`
 }
