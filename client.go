@@ -2,13 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
-
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func makeGetRequest(endpoint string) (*http.Request, error) {
