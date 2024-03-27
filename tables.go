@@ -5,7 +5,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 )
 
-func createTable(columns []table.Column, rowDatas []table.RowData) (t table.Model) {
+func createTable(columns []table.Column, rowDatas []table.RowData, width int) (t table.Model) {
 	rows := make([]table.Row, len(rowDatas))
 	for i, rowData := range rowDatas {
 		rows[i] = table.NewRow(rowData)
@@ -15,7 +15,7 @@ func createTable(columns []table.Column, rowDatas []table.RowData) (t table.Mode
 		Filtered(true).
 		Focused(true).
 		WithPageSize(10).
-		WithTargetWidth(100).
+		WithTargetWidth(width).
 		WithBaseStyle(
 			lipgloss.NewStyle().
 				BorderForeground(lipgloss.Color("#a38")).
@@ -28,7 +28,7 @@ func createTable(columns []table.Column, rowDatas []table.RowData) (t table.Mode
 	return
 }
 
-func createWorkspacesTable(workspaces workspaceResponse) table.Model {
+func createWorkspacesTable(workspaces workspaceResponse, width int) table.Model {
 	rowDatas := make([]table.RowData, len(workspaces.OrgsAndWorkspaces))
 	for i, workspace := range workspaces.OrgsAndWorkspaces {
 		rowDatas[i] = table.RowData{
@@ -46,10 +46,11 @@ func createWorkspacesTable(workspaces workspaceResponse) table.Model {
 			table.NewFlexColumn("workspaceFullName", "Workspace Full Name", 1).WithFiltered(true),
 		},
 		rowDatas,
+        width,
 	)
 }
 
-func createWorkflowsTable(workflows workflowsResponse) table.Model {
+func createWorkflowsTable(workflows workflowsResponse, width int) table.Model {
 	rowDatas := make([]table.RowData, len(workflows.Workflows))
 	for i, workflow := range workflows.Workflows {
 		rowDatas[i] = table.RowData{
@@ -68,20 +69,21 @@ func createWorkflowsTable(workflows workflowsResponse) table.Model {
 	}
 	return createTable(
 		[]table.Column{
-			table.NewColumn("runName", "Run Name", 15).WithFiltered(true),
-			table.NewColumn("status", "Status", 10).WithFiltered(true),
-			table.NewColumn("submit", "Submit", 20),
-			table.NewColumn("start", "Start", 20),
-			table.NewColumn("complete", "Complete", 20),
-			table.NewColumn("cached", "Cached", 10),
-			table.NewColumn("succeeded", "Succeeded", 10),
-			table.NewColumn("failed", "Failed", 10),
+			table.NewFlexColumn("runName", "Run Name", 1).WithFiltered(true),
+			table.NewFlexColumn("status", "Status", 1).WithFiltered(true),
+			table.NewFlexColumn("submit", "Submit", 1),
+			table.NewFlexColumn("start", "Start", 1),
+			table.NewFlexColumn("complete", "Complete", 1),
+			table.NewFlexColumn("cached", "Cached", 1),
+			table.NewFlexColumn("succeeded", "Succeeded", 1),
+			table.NewFlexColumn("failed", "Failed", 1),
 		},
 		rowDatas,
+        width,
 	)
 }
 
-func createTasksTable(tasks tasksResponse) table.Model {
+func createTasksTable(tasks tasksResponse, width int) table.Model {
 	rowDatas := make([]table.RowData, len(tasks.Tasks))
 	for i, task := range tasks.Tasks {
 		rowDatas[i] = table.RowData{
@@ -95,12 +97,13 @@ func createTasksTable(tasks tasksResponse) table.Model {
 	}
 	return createTable(
 		[]table.Column{
-                    table.NewFlexColumn("name", "Name", 1).WithFiltered(true),
-                    table.NewColumn("status", "Status", 1).WithFiltered(true),
-                    table.NewColumn("attempt", "Attempt", 1),
-                    table.NewColumn("duration", "Duration", 1),
-                    table.NewColumn("tag", "Tag", 1),
+                    table.NewFlexColumn("name", "Name", 10).WithFiltered(true),
+                    table.NewFlexColumn("status", "Status", 2).WithFiltered(true),
+                    table.NewFlexColumn("attempt", "Attempt", 1),
+                    table.NewFlexColumn("duration", "Duration", 2),
+                    table.NewFlexColumn("tag", "Tag", 5),
                 },
 		rowDatas,
+        width,
 	)
 }

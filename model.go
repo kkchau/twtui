@@ -31,6 +31,9 @@ type model struct {
 	// of selected rows to allow the user to navigate back to the previous
 	// context.
 	rowQueryStack []table.Row
+
+    windowWidth int
+    windowHeight int
 }
 
 func (m *model) nextContext() {
@@ -49,12 +52,15 @@ func (m *model) prevContext() table.Row {
 func (m *model) updateTable(highlightedRow table.Row) {
 	switch m.context {
 	case Workspaces:
-		m.table = createWorkspacesTable(getWorkspaces())
+		m.table = createWorkspacesTable(getWorkspaces(), m.windowWidth)
 	case Workflows:
-		m.table = createWorkflowsTable(getWorkflows(highlightedRow.Data["workspaceId"].(int)))
+		m.table = createWorkflowsTable(
+            getWorkflows(highlightedRow.Data["workspaceId"].(int)), m.windowWidth,
+        )
 	case Tasks:
 		m.table = createTasksTable(
 			getWorkflowTasks(highlightedRow.Data["workspaceId"].(int), highlightedRow.Data["workflowId"].(string)),
+            m.windowWidth,
 		)
 	}
 }
