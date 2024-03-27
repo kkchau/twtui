@@ -44,11 +44,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
     case tea.WindowSizeMsg:
-        f, _ := tea.LogToFile("windowSizeMsg.txt", fmt.Sprintf("%v", msg))
-        defer f.Close()
-
-        f.WriteString(fmt.Sprintf("windowSizeMsg: %v\n", msg))
-
         m.windowWidth = msg.Width
         m.windowHeight = msg.Height
         m.table = m.table.WithTargetWidth(int(math.Floor(float64(msg.Width) * 0.9)))

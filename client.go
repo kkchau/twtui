@@ -87,12 +87,6 @@ func getWorkflowTasks(workspaceId int, workflowId string) tasksResponse {
 		panic(err)
 	}
 
-    f, err := tea.LogToFile("debug.log", "debug")
-    defer f.Close()
-
-    f.WriteString(fmt.Sprintf("getWorkflowTasks: %v\n", req.URL))
-    f.WriteString(fmt.Sprintf("getWorkflowTasks: %v\n", res))
-
 	body, _ := io.ReadAll(res.Body)
 	defer res.Body.Close()
 
