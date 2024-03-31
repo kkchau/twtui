@@ -23,24 +23,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
-	m.table, cmd = m.table.Update(msg)
-	cmds = append(cmds, cmd)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			if m.context > MinContext+1 {
+			if m.context > MinContext+1 && !m.table.GetIsFilterInputFocused() {
 				prevRow := m.prevContext()
 				m.updateTable(prevRow)
+                return m, nil
 			}
-			return m, nil
 		case "enter":
-			if m.context < MaxContext-1 {
+			if m.context < MaxContext-1 && !m.table.GetIsFilterInputFocused() {
 				m.nextContext()
 				m.updateTable(m.table.HighlightedRow())
+                return m, nil
 			}
-			return m, nil
-		case "q", "ctrl+c":
+		case "ctrl+c":
 			return m, tea.Quit
 		}
     case tea.WindowSizeMsg:
@@ -48,6 +46,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         m.windowHeight = msg.Height
         m.table = m.table.WithTargetWidth(int(math.Floor(float64(msg.Width) * 0.9)))
 	}
+	m.table, cmd = m.table.Update(msg)
+	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
 }
 
