@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/evertras/bubble-table/table"
 )
 
@@ -27,13 +29,20 @@ type model struct {
 	// The context represents the current state of the application.
 	context Context
 
+	// The pageOffset is used to keep track of the current page of data where applicable
+	pageOffset int
+
+	// The loadMore is used to indicate if the user can load more data
+	// than what is currently visible in the table
+	loadMore string
+
 	// The model table is updated based on the selected row. Store the stack
 	// of selected rows to allow the user to navigate back to the previous
 	// context.
 	rowQueryStack []table.Row
 
-    windowWidth int
-    windowHeight int
+	windowWidth  int
+	windowHeight int
 }
 
 func (m *model) nextContext() {
@@ -50,17 +59,32 @@ func (m *model) prevContext() table.Row {
 	return row
 }
 func (m *model) updateTable(highlightedRow table.Row) {
+	var response PaginatedResponse
+	m.loadMore = ""
 	switch m.context {
 	case Workspaces:
-		m.table = createWorkspacesTable(getWorkspaces(), m.windowWidth)
+		response = getWorkspaces()
+		m.table = createWorkspacesTable(response.(workspaceResponse), m.windowWidth)
 	case Workflows:
-		m.table = createWorkflowsTable(
-            getWorkflows(highlightedRow.Data["workspaceId"].(int)), m.windowWidth,
-        )
+		response = getWorkflows(highlightedRow.Data["workspaceId"].(int))
+		m.table = createWorkflowsTable(response.(workflowsResponse), m.windowWidth)
 	case Tasks:
-		m.table = createTasksTable(
-			getWorkflowTasks(highlightedRow.Data["workspaceId"].(int), highlightedRow.Data["workflowId"].(string)),
-            m.windowWidth,
+		response = getWorkflowTasks(
+			highlightedRow.Data["workspaceId"].(int),
+			highlightedRow.Data["workflowId"].(string),
+			m.pageOffset,
 		)
+		m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
+		m.loadMore = fmt.Sprintf(
+			"Loaded tasks %d-%d out of %d total tasks.",
+			m.pageOffset,
+			m.pageOffset+response.GetPageSize()-1,
+			highlightedRow.Data["total"],
+		)
+	}
+	if m.loadMore != "" {
+		m.pageOffset += response.GetPageSize()
+	} else {
+		m.pageOffset = 0
 	}
 }

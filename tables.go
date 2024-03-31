@@ -46,7 +46,7 @@ func createWorkspacesTable(workspaces workspaceResponse, width int) table.Model 
 			table.NewFlexColumn("workspaceFullName", "Workspace Full Name", 1).WithFiltered(true),
 		},
 		rowDatas,
-        width,
+		width,
 	)
 }
 
@@ -79,7 +79,7 @@ func createWorkflowsTable(workflows workflowsResponse, width int) table.Model {
 			table.NewFlexColumn("failed", "Failed", 1),
 		},
 		rowDatas,
-        width,
+		width,
 	)
 }
 
@@ -87,23 +87,26 @@ func createTasksTable(tasks tasksResponse, width int) table.Model {
 	rowDatas := make([]table.RowData, len(tasks.Tasks))
 	for i, task := range tasks.Tasks {
 		rowDatas[i] = table.RowData{
-			"id":       task.Task.Id,
-			"name":     task.Task.Name,
-			"status":   task.Task.Status,
-			"attempt":  task.Task.Attempt,
-			"duration": task.Task.Duration,
-			"tag":      task.Task.Tag,
+			"workspaceId": tasks.WorkspaceId,
+			"workflowId":  tasks.WorkflowId,
+			"id":          task.Task.Id,
+			"name":        task.Task.Name,
+			"status":      task.Task.Status,
+			"attempt":     task.Task.Attempt,
+			"duration":    task.Task.Duration,
+			"tag":         task.Task.Tag,
+			"total":       tasks.Total,
 		}
 	}
 	return createTable(
 		[]table.Column{
-                    table.NewFlexColumn("name", "Name", 10).WithFiltered(true),
-                    table.NewFlexColumn("status", "Status", 2).WithFiltered(true),
-                    table.NewFlexColumn("attempt", "Attempt", 1),
-                    table.NewFlexColumn("duration", "Duration", 2),
-                    table.NewFlexColumn("tag", "Tag", 5),
-                },
+			table.NewFlexColumn("name", "Name", 10).WithFiltered(true),
+			table.NewFlexColumn("status", "Status", 2).WithFiltered(true),
+			table.NewFlexColumn("attempt", "Attempt", 1),
+			table.NewFlexColumn("duration", "Duration", 2),
+			table.NewFlexColumn("tag", "Tag", 5),
+		},
 		rowDatas,
-        width,
+		width,
 	)
 }

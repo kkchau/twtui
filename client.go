@@ -72,10 +72,11 @@ func getWorkflows(workspaceId int) workflowsResponse {
 	return workflows
 }
 
-func getWorkflowTasks(workspaceId int, workflowId string) tasksResponse {
+func getWorkflowTasks(workspaceId int, workflowId string, pageOffset int) tasksResponse {
 	req, _ := makeGetRequest("/workflow/" + workflowId + "/tasks")
 	query := req.URL.Query()
 	query.Add("workspaceId", strconv.Itoa(workspaceId))
+	query.Add("offset", strconv.Itoa(pageOffset))
 	req.URL.RawQuery = query.Encode()
 	client := &http.Client{Timeout: 10 * time.Second}
 	res, err := client.Do(req)
@@ -89,5 +90,10 @@ func getWorkflowTasks(workspaceId int, workflowId string) tasksResponse {
 
 	tasks := tasksResponse{}
 	json.Unmarshal(body, &tasks)
+
+	// Store the workspaceId and workflowId in the tasks struct
+	// for subsequent requests
+	tasks.WorkspaceId = workspaceId
+	tasks.WorkflowId = workflowId
 	return tasks
 }

@@ -1,5 +1,9 @@
 package main
 
+type PaginatedResponse interface {
+	GetPageSize() int
+}
+
 type userInfoResponse struct {
 	User struct {
 		Id int `json:"id"`
@@ -15,6 +19,8 @@ type workspaceResponse struct {
 		WorkspaceFullName string `json:"workspaceFullName"`
 	} `json:"orgsAndWorkspaces"`
 }
+
+func (w workspaceResponse) GetPageSize() int { return 0 }
 
 type workflowsResponse struct {
 	Workflows []struct {
@@ -36,6 +42,8 @@ type workflowsResponse struct {
 	} `json:"workflows"`
 }
 
+func (w workflowsResponse) GetPageSize() int { return 0 }
+
 type workflowResponse struct {
 	Workflow struct {
 		Id       string `json:"id"`
@@ -45,8 +53,12 @@ type workflowResponse struct {
 	} `json:"workflow"`
 }
 
+func (w workflowResponse) GetPageSize() int { return 0 }
+
 type tasksResponse struct {
-	Tasks []struct {
+	WorkspaceId int
+	WorkflowId  string
+	Tasks       []struct {
 		Task struct {
 			Id       string `json:"id"`
 			Name     string `json:"name"`
@@ -56,4 +68,7 @@ type tasksResponse struct {
 			Tag      string `json:"tag"`
 		} `json:"task"`
 	} `json:"tasks"`
+	Total int `json:"total"`
 }
+
+func (t tasksResponse) GetPageSize() int { return len(t.Tasks) }
