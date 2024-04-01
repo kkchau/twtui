@@ -76,6 +76,7 @@ func getWorkflowTasks(workspaceId int, workflowId string, pageOffset int) tasksR
 	req, _ := makeGetRequest("/workflow/" + workflowId + "/tasks")
 	query := req.URL.Query()
 	query.Add("workspaceId", strconv.Itoa(workspaceId))
+	query.Add("max", "100")
 	query.Add("offset", strconv.Itoa(pageOffset))
 	req.URL.RawQuery = query.Encode()
 	client := &http.Client{Timeout: 10 * time.Second}

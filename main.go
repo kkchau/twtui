@@ -29,18 +29,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			if m.context > MinContext+1 && !m.table.GetIsFilterInputFocused() {
 				prevRow := m.prevContext()
-				m.updateTable(prevRow)
+				m.updateTable(prevRow, false)
 				return m, nil
 			}
 		case "enter":
 			if m.context < MaxContext-1 && !m.table.GetIsFilterInputFocused() {
 				m.nextContext()
-				m.updateTable(m.table.HighlightedRow())
+				m.updateTable(m.table.HighlightedRow(), false)
 				return m, nil
 			}
 		case "tab":
 			if m.loadMore != "" {
-				m.updateTable(m.table.HighlightedRow())
+				m.updateTable(m.table.HighlightedRow(), false)
+				return m, nil
+			}
+		case "shift+tab":
+			if m.loadMore != "" {
+				m.updateTable(m.table.HighlightedRow(), true)
 				return m, nil
 			}
 		case "ctrl+c":
@@ -60,7 +65,12 @@ func (m model) View() string {
 	body := strings.Builder{}
 	body.WriteString(m.table.View() + "\n")
 	if m.loadMore != "" {
-		body.WriteString(m.loadMore + " Press [TAB] to load more.\n")
+		body.WriteString(
+			m.loadMore +
+				"\nPress [TAB] to load more." +
+				"\nPress [SHIFT-TAB] to go back." +
+				"\n",
+		)
 	}
 
 	return body.String()

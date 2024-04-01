@@ -58,7 +58,7 @@ func (m *model) prevContext() table.Row {
 	m.rowQueryStack = m.rowQueryStack[:len(m.rowQueryStack)-1]
 	return row
 }
-func (m *model) updateTable(highlightedRow table.Row) {
+func (m *model) updateTable(highlightedRow table.Row, backstep bool) {
 	var response PaginatedResponse
 	m.loadMore = ""
 	switch m.context {
@@ -69,6 +69,16 @@ func (m *model) updateTable(highlightedRow table.Row) {
 		response = getWorkflows(highlightedRow.Data["workspaceId"].(int))
 		m.table = createWorkflowsTable(response.(workflowsResponse), m.windowWidth)
 	case Tasks:
+		if backstep {
+			if m.pageOffset == 0 {
+				return
+			}
+
+			m.pageOffset -= len(m.table.GetVisibleRows()) * 2
+			if m.pageOffset < 0 {
+				m.pageOffset = 0
+			}
+		}
 		response = getWorkflowTasks(
 			highlightedRow.Data["workspaceId"].(int),
 			highlightedRow.Data["workflowId"].(string),
@@ -76,10 +86,9 @@ func (m *model) updateTable(highlightedRow table.Row) {
 		)
 		m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
 		m.loadMore = fmt.Sprintf(
-			"Loaded tasks %d-%d out of %d total tasks.",
-			m.pageOffset,
-			m.pageOffset+response.GetPageSize()-1,
-			highlightedRow.Data["total"],
+			"Loaded %d - %d.",
+			m.pageOffset+1,
+			m.pageOffset+response.GetPageSize(),
 		)
 	}
 	if m.loadMore != "" {
