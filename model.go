@@ -84,12 +84,14 @@ func (m *model) updateTable(highlightedRow table.Row, backstep bool) {
 			highlightedRow.Data["workflowId"].(string),
 			m.pageOffset,
 		)
-		m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
 		m.loadMore = fmt.Sprintf(
 			"Loaded %d - %d.",
 			m.pageOffset+1,
 			m.pageOffset+response.GetPageSize(),
 		)
+                if response.GetPageSize() > 0 {
+                    m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
+                }
 	}
 	if m.loadMore != "" {
 		m.pageOffset += response.GetPageSize()

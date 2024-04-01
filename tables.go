@@ -58,7 +58,9 @@ func createWorkflowsTable(workflows workflowsResponse, width int) table.Model {
 			"workspaceId": workflow.WorkspaceId,
 			"id":          workflow.Workflow.Id,
 			"runName":     workflow.Workflow.RunName,
+			"scriptName":  workflow.Workflow.ScriptName,
 			"status":      workflow.Workflow.Status,
+			"workDir":     workflow.Workflow.WorkDir,
 			"submit":      workflow.Workflow.Submit,
 			"start":       workflow.Workflow.Start,
 			"complete":    workflow.Workflow.Complete,
@@ -70,6 +72,7 @@ func createWorkflowsTable(workflows workflowsResponse, width int) table.Model {
 	return createTable(
 		[]table.Column{
 			table.NewFlexColumn("runName", "Run Name", 1).WithFiltered(true),
+			table.NewFlexColumn("scriptName", "Script Name", 2).WithFiltered(true),
 			table.NewFlexColumn("status", "Status", 1).WithFiltered(true),
 			table.NewFlexColumn("submit", "Submit", 1),
 			table.NewFlexColumn("start", "Start", 1),
@@ -94,6 +97,7 @@ func createTasksTable(tasks tasksResponse, width int) table.Model {
 			"status":      task.Task.Status,
 			"attempt":     task.Task.Attempt,
 			"duration":    task.Task.Duration,
+			"workdir":     task.Task.WorkDir,
 			"tag":         task.Task.Tag,
 			"total":       tasks.Total,
 		}
@@ -103,7 +107,7 @@ func createTasksTable(tasks tasksResponse, width int) table.Model {
 			table.NewFlexColumn("name", "Name", 10).WithFiltered(true),
 			table.NewFlexColumn("status", "Status", 2).WithFiltered(true),
 			table.NewFlexColumn("attempt", "Attempt", 1),
-			table.NewFlexColumn("duration", "Duration", 2),
+			table.NewFlexColumn("workdir", "Workdir", 10),
 			table.NewFlexColumn("tag", "Tag", 5),
 		},
 		rowDatas,

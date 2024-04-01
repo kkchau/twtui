@@ -27,17 +27,19 @@ type workflowsResponse struct {
 		OrgName     string `json:"orgName"`
 		WorkspaceId int    `json:"workspaceId"`
 		Workflow    struct {
-			Id       string `json:"id"`
-			RunName  string `json:"runName"`
-			Status   string `json:"status"`
-			Submit   string `json:"submit"`
-			Start    string `json:"start"`
-			Complete string `json:"complete"`
-			Stats    struct {
+			Id         string `json:"id"`
+			RunName    string `json:"runName"`
+			ScriptName string `json:"scriptName"`
+			Status     string `json:"status"`
+			Submit     string `json:"submit"`
+			Start      string `json:"start"`
+			Complete   string `json:"complete"`
+			Stats      struct {
 				Cached    int `json:"cachedCount"`
 				Succeeded int `json:"succeedCount"`
 				Failed    int `json:"failedCount"`
 			} `json:"stats"`
+			WorkDir string `json:"workDir"`
 		} `json:"workflow"`
 	} `json:"workflows"`
 }
@@ -65,6 +67,7 @@ type tasksResponse struct {
 			Status   string `json:"status"`
 			Attempt  int    `json:"attempt"`
 			Duration string `json:"duration"`
+			WorkDir  string `json:"workdir"`
 			Tag      string `json:"tag"`
 		} `json:"task"`
 	} `json:"tasks"`
