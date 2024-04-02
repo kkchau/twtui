@@ -29,23 +29,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			if m.context > MinContext+1 && !m.table.GetIsFilterInputFocused() {
 				prevRow := m.prevContext()
-				m.updateTable(prevRow, false)
+				m.updateTable(prevRow)
+				m.pageNumber = 0
 				return m, nil
 			}
 		case "enter":
 			if m.context < MaxContext-1 && !m.table.GetIsFilterInputFocused() {
 				m.nextContext()
-				m.updateTable(m.table.HighlightedRow(), false)
+				m.updateTable(m.table.HighlightedRow())
+				m.pageNumber = 0
 				return m, nil
 			}
 		case "tab":
 			if m.loadMore != "" {
-				m.updateTable(m.table.HighlightedRow(), false)
+				m.pageNumber++
+				m.updateTable(m.table.HighlightedRow())
 				return m, nil
 			}
 		case "shift+tab":
 			if m.loadMore != "" {
-				m.updateTable(m.table.HighlightedRow(), true)
+				m.pageNumber--
+				m.updateTable(m.table.HighlightedRow())
 				return m, nil
 			}
 		case "ctrl+c":

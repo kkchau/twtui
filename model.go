@@ -29,8 +29,8 @@ type model struct {
 	// The context represents the current state of the application.
 	context Context
 
-	// The pageOffset is used to keep track of the current page of data where applicable
-	pageOffset int
+	// The pageNumber is used to keep track of the current page of data where applicable
+	pageNumber int
 
 	// The loadMore is used to indicate if the user can load more data
 	// than what is currently visible in the table
@@ -58,44 +58,37 @@ func (m *model) prevContext() table.Row {
 	m.rowQueryStack = m.rowQueryStack[:len(m.rowQueryStack)-1]
 	return row
 }
-func (m *model) updateTable(highlightedRow table.Row, backstep bool) {
+func (m *model) updateTable(highlightedRow table.Row) {
 	var response PaginatedResponse
-	m.loadMore = ""
 	switch m.context {
 	case Workspaces:
+		m.loadMore = ""
 		response = getWorkspaces()
 		m.table = createWorkspacesTable(response.(workspaceResponse), m.windowWidth)
 	case Workflows:
+		m.loadMore = ""
 		response = getWorkflows(highlightedRow.Data["workspaceId"].(int))
 		m.table = createWorkflowsTable(response.(workflowsResponse), m.windowWidth)
 	case Tasks:
-		if backstep {
-			if m.pageOffset == 0 {
-				return
-			}
-
-			m.pageOffset -= len(m.table.GetVisibleRows()) * 2
-			if m.pageOffset < 0 {
-				m.pageOffset = 0
-			}
-		}
 		response = getWorkflowTasks(
 			highlightedRow.Data["workspaceId"].(int),
 			highlightedRow.Data["workflowId"].(string),
-			m.pageOffset,
+			m.pageNumber*MaxPageSize,
 		)
+		if response.GetPageSize() == 0 {
+			m.pageNumber--
+			return
+		}
 		m.loadMore = fmt.Sprintf(
 			"Loaded %d - %d.",
-			m.pageOffset+1,
-			m.pageOffset+response.GetPageSize(),
+			m.pageNumber*MaxPageSize+1,
+			m.pageNumber*MaxPageSize+response.GetPageSize(),
 		)
-                if response.GetPageSize() > 0 {
-                    m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
-                }
+		if response.GetPageSize() > 0 {
+			m.table = createTasksTable(response.(tasksResponse), m.windowWidth)
+		}
 	}
-	if m.loadMore != "" {
-		m.pageOffset += response.GetPageSize()
-	} else {
-		m.pageOffset = 0
+	if m.loadMore == "" {
+		m.pageNumber = 0
 	}
 }
